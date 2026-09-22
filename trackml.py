@@ -1,20 +1,26 @@
 # TrackML - a lightweight experiment tracker for ML training runs
 # v1: record and retrieve training runs
-# 
 
 import json
 class Run:
+    """Represents a single training run: its ID, settings, and result."""
+
     def __init__(self, run_id, settings, results):
         self.run_id = run_id
         self.settings = settings
         self.results = results
 class Tracker:
+    """Manages a collection of training runs: recording, retrieving,
+    comparing, and persisting them to disk."""
+
     def __init__(self, last_run_id=0):
+        """Set up an empty run collection and load any previously saved runs."""
         self.runs = {}
         self.last_run_id = last_run_id
         self.load_from_file()  # Load existing runs from file
 
     def add_run(self, settings, results):
+        """Validate and record a new run, auto-assigning it the next ID."""
         if not isinstance(settings, dict):
             raise TypeError("Settings must be a dictionary")
         if not isinstance(results, (int, float)):
@@ -27,12 +33,15 @@ class Tracker:
         return run
         
     def get_run(self, run_id):
+        """Retrieve a single run by its ID, or None if it doesn't exist."""
         return self.runs.get(run_id)
 
     def list_runs(self):
+        """Return every recorded run as a list."""
         return list(self.runs.values())
 
     def get_best_run(self):
+        """Return the run with the highest result, or None if no runs exist."""
         best = None
         for run in self.runs.values():
             if best is None or run.results > best.results:
@@ -40,6 +49,7 @@ class Tracker:
         return best
 
     def save_to_file(self):
+        """Write all runs to runs.json, converting each Run into a plain dict."""
         all_runs_as_dicts = {}
         for run in self.runs.values():
             all_runs_as_dicts[run.run_id] = {"id": run.run_id, "settings": run.settings, "results": run.results}
@@ -47,6 +57,7 @@ class Tracker:
             json.dump(all_runs_as_dicts, f)
 
     def load_from_file(self):
+        """Load runs from runs.json into memory, if the file exists."""
         try:
             with open("runs.json", "r") as f:
                 all_runs_as_dicts = json.load(f)
@@ -58,19 +69,21 @@ class Tracker:
             pass  # No previous runs to load
 
     def get_leadboards(self):
+        """Return all runs sorted from best to worst result."""
         return sorted(self.list_runs(), key=lambda run: run.results, reverse=True)    
 
-tracker = Tracker()
-run1 = tracker.add_run({"learning_rate": 0.01, "epochs": 10}, 87)
-run2 = tracker.add_run({"learning_rate": 0.02, "epochs": 20}, 90)
-found = tracker.get_run(2)
-best_run = tracker.get_best_run()
-list_of_runs = tracker.list_runs()  
-print(f"Run ID: {found.run_id}, Settings: {found.settings}, Results: {found.results}")  
-print(f"List of Runs: {[{'id': run.run_id, 'settings': run.settings, 'results': run.results} for run in list_of_runs]}")    
-print(f"Best Run ID: {best_run.run_id}, Settings: {best_run.settings}, Results: {best_run.results}")  
+if __name__ == "__main__":
+    tracker = Tracker()
+    run1 = tracker.add_run({"learning_rate": 0.01, "epochs": 10}, 87)
+    run2 = tracker.add_run({"learning_rate": 0.02, "epochs": 20}, 90)
+    found = tracker.get_run(2)
+    best_run = tracker.get_best_run()
+    list_of_runs = tracker.list_runs()  
 
-leaderboard = tracker.get_leadboards()
+    print(f"Run ID: {found.run_id}, Settings: {found.settings}, Results: {found.results}")  
+    print(f"List of Runs: {[{'id': run.run_id, 'settings': run.settings, 'results': run.results} for run in list_of_runs]}")    
+    print(f"Best Run ID: {best_run.run_id}, Settings: {best_run.settings}, Results: {best_run.results}")  
 
-for index, run in enumerate(leaderboard, start=1):
-    print(f"Rank {index}: Run ID: {run.run_id}, Settings: {run.settings}, Results: {run.results}")
+    leaderboard = tracker.get_leadboards()
+    for index, run in enumerate(leaderboard, start=1):
+        print(f"Rank {index}: Run ID: {run.run_id}, Settings: {run.settings}, Results: {run.results}")

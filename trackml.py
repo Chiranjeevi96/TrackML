@@ -11,6 +11,11 @@ class Tracker:
         self.last_run_ID = last_run_ID
 
     def add_run(self, Settings, results):
+        if not isinstance(Settings, dict):
+            raise TypeError("Settings must be a dictionary")
+        if not isinstance(results, (int, float)):
+            raise TypeError("Results must be a number")
+        
         self.last_run_ID += 1
         run = Run(self.last_run_ID, Settings, results)
         self.runs[run.ID] = run
@@ -34,7 +39,9 @@ class Tracker:
 tracker = Tracker()
 run1 = tracker.add_run({"learning_rate": 0.01, "epochs": 10}, 87)
 run2 = tracker.add_run({"learning_rate": 0.02, "epochs": 20}, 90)
-found = tracker.get_run(1)
+# run3 = tracker.add_run("Text", 85)
+run4 = tracker.add_run({"learning_rate": 0.03, "epochs": 30}, "hello")
+found = tracker.get_run(4)
 best_run = tracker.get_best_run()
 list_of_runs = tracker.list_runs()  
 print(f"Run ID: {found.ID}, Settings: {found.Settings}, Results: {found.results}")  

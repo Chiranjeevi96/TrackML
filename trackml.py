@@ -56,16 +56,21 @@ class Tracker:
                     self.last_run_ID = max(self.last_run_ID, run.ID)
         except FileNotFoundError:
             pass  # No previous runs to load
-    
+
+    def get_leadboards(self):
+        return sorted(self.list_runs(), key=lambda run: run.results, reverse=True)    
 
 tracker = Tracker()
 run1 = tracker.add_run({"learning_rate": 0.01, "epochs": 10}, 87)
 run2 = tracker.add_run({"learning_rate": 0.02, "epochs": 20}, 90)
-# run3 = tracker.add_run("Text", 85)
-# run4 = tracker.add_run({"learning_rate": 0.03, "epochs": 30}, "hello")
 found = tracker.get_run(2)
 best_run = tracker.get_best_run()
 list_of_runs = tracker.list_runs()  
 print(f"Run ID: {found.ID}, Settings: {found.Settings}, Results: {found.results}")  
 print(f"List of Runs: {[{'ID': run.ID, 'Settings': run.Settings, 'Results': run.results} for run in list_of_runs]}")    
 print(f"Best Run ID: {best_run.ID}, Settings: {best_run.Settings}, Results: {best_run.results}")  
+
+leaderboard = tracker.get_leadboards()
+
+for index, run in enumerate(leaderboard, start=1):
+    print(f"Rank {index}: Run ID: {run.ID}, Settings: {run.Settings}, Results: {run.results}")
